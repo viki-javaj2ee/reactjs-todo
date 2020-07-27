@@ -1,6 +1,8 @@
 import React, {Component} from 'react'
 import moment from 'moment'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
+import TodoDataService from '../../api/todo/TodoDataService';
+import AuthenticationService from './AuthenticationService';
 
 class TodosComponent extends Component {
 
@@ -9,11 +11,25 @@ class TodosComponent extends Component {
 
         this.state = {
             id: this.props.match.params.id,
-            description: 'Learn Form',
+            description: '',
             targetDate: moment(new Date()).format('YYYY-MM-DD')
         }
         this.onSubmit = this.onSubmit.bind(this)
         this.validate = this.validate.bind(this)
+    }
+
+    componentDidMount(){
+
+        if(this.state.id===-1){
+            return
+        } else{
+        let username = AuthenticationService.getLoggedInUserName()
+        TodoDataService.retrieveTodo(username, this.state.id)
+            .then(response => this.setState({
+                description: response.data.description,
+                targetDate: moment(response.data.targetDate).format('YYYY-MM-DD')
+            }))
+        }
     }
 
     validate(values){
@@ -33,7 +49,20 @@ class TodosComponent extends Component {
     }
 
     onSubmit(values){
+        let username = AuthenticationService.getLoggedInUserName()
+        let todo = {
+            id: this.state.id,
+            description:values.description,
+            targetDate: values.targetDate
+        }
 
+        if(this.state.id===-1){
+            TodoDataService.addTodo(username,todo)
+                .then(()=>{this.props.history.push(`/todos`)})
+        } else{
+            TodoDataService.updateTodo(username,this.state.id,todo)
+                .then(()=>{this.props.history.push(`/todos`)})
+        }
     }
 
 
@@ -53,6 +82,7 @@ class TodosComponent extends Component {
                     validate={this.validate}
                     validateOnBlur={false}
                     validateOnChange={false}
+                    enableReinitialize={true}
                 >
                 {
                     (props) => (
