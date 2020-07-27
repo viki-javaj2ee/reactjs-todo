@@ -46,7 +46,7 @@ class ListTodosComponent extends Component {
     
     deleteTodoClicked(id){
         let username = AuthenticationService.getLoggedInUserName()
-        TodoDataService.delteTodo(username,id)
+        TodoDataService.deleteTodo(username,id)
         .then(
             response => {
                 this.setState({ message: `Delete of todo ${id} Successful`})

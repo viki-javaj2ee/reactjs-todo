@@ -12,6 +12,7 @@ class WelcomeComponent extends Component {
         this.handleSuccessfulResponse = this.handleSuccessfulResponse.bind(this)
         this.retrieveWelcomeBeanMessage = this.retrieveWelcomeBeanMessage.bind(this)
         this.retrievePathVariableMessage = this.retrievePathVariableMessage.bind(this)
+        this.handleError = this.handleError.bind(this)
 
         this.state = {
             welcomeMessage: '',
@@ -47,23 +48,35 @@ class WelcomeComponent extends Component {
         console.log("retrieve clicked");
         HelloWorldDataService.executeHelloWorldService()
         .then(response => this.handleSuccessfulResponse(response))
-        //.catch()
+        .catch(error => this.handleError(error))
     }
 
     handleSuccessfulResponse(response){
         this.setState({welcomeMessage: response.data})
     }
 
+    handleError(error){
+        let errorMessage= ''
+
+        if (error.message)
+            errorMessage += error.message
+
+        if(error.response && error.response.data) 
+           errorMessage += error.response.data.message   
+           
+        this.setState({welcomeMessage: errorMessage})   
+    }
+
     retrieveWelcomeBeanMessage(){
         HelloWorldDataService.executeHelloWorldBeanService()
         .then(response => this.setState({welcomeBeanMessage: response.data.message}))
-        //.catch()
+        .catch(error => this.handleError(error))
     }
 
     retrievePathVariableMessage(){
         HelloWorldDataService.executeHelloWorldPathVariableService(this.props.match.params.name)
         .then(response => this.setState({welcomeBeanMessage: response.data.message}))
-        //.catch()
+        .catch(error => this.handleError(error))
     }
 
 } 
